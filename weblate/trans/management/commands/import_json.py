@@ -103,7 +103,10 @@ class Command(BaseCommand):
         finally:
             options['json-file'].close()
 
-        for item in data:
+        if ('results' not in data):
+            raise CommandError('Missing required field "results" in JSON! See format of /api/components')
+
+        for item in data["results"]:
             if ('filemask' not in item or
                     'name' not in item):
                 raise CommandError('Missing required fields in JSON!')
@@ -119,6 +122,10 @@ class Command(BaseCommand):
                 item['repo'] = main_component.get_repo_link_url()
 
             item['project'] = project
+
+            for keyword in ['web_url','url','repository_url','translations_url','statistics_url','lock_url','changes_list_url']:
+                if keyword in item:
+                    item.pop(keyword, None)
 
             try:
                 component = Component.objects.get(
